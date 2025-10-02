@@ -7,7 +7,7 @@ import (
 	"github.com/cloudnoize/el_gokv/src/plasma/types"
 )
 
-func TestSkipList_putAndGet(t *testing.T) {
+func TestMemTable_putAndGet(t *testing.T) {
 	mmt := NewMemTable(1024, 0.5)
 	key := []byte("key")
 	version := 1
