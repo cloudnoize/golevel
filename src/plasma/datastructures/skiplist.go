@@ -92,7 +92,7 @@ func (s *SkipList) Put(kv *types.KV) {
 }
 
 // TODO also version
-func (s SkipList) Get(key []byte) ([]byte, bool, uint64) {
+func (s SkipList) Get(key []byte) (types.VersionedValue, bool, uint64) {
 	steps := uint64(0)
 	curr := s.head
 	for lvl := int(s.maxHeight) - 1; lvl >= 0; lvl-- {
@@ -105,7 +105,7 @@ func (s SkipList) Get(key []byte) ([]byte, bool, uint64) {
 			}
 			res := bytes.Compare(key, next.key)
 			if res == 0 {
-				return next.verValues.Top().Value, true, steps
+				return next.verValues.Top(), true, steps
 			}
 			if res == -1 {
 				// next key is bigger,need to go down a level
@@ -117,7 +117,7 @@ func (s SkipList) Get(key []byte) ([]byte, bool, uint64) {
 			steps++
 		}
 	}
-	return nil, false, steps
+	return types.VersionedValue{}, false, steps
 }
 
 type Iterator struct {

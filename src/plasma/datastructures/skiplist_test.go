@@ -44,13 +44,13 @@ func TestSkipList_putAndGet(t *testing.T) {
 	if v, ok, _ := sl.Get([]byte("doesn't exist")); ok {
 		t.Fatalf("Expected not to get a value but received %x", v)
 	}
-	var out []byte
+	var out types.VersionedValue
 	var ok bool
 	if out, ok, _ = sl.Get(key); !ok {
 		t.Fatalf("Expected to get a value but didn't")
 	}
-	if !bytes.Equal(out, value) {
-		t.Fatalf("expected %s but got %s", value, out)
+	if !bytes.Equal(out.Value, value) {
+		t.Fatalf("expected %s but got %x", value, out)
 	}
 
 }
@@ -89,7 +89,7 @@ func TestSkipList_severalPutsAndGets(t *testing.T) {
 	}
 
 	for _, key := range elems {
-		if val, ok, _ := sl.Get(key); !ok || !bytes.Equal(key, val) {
+		if val, ok, _ := sl.Get(key); !ok || !bytes.Equal(key, val.Value) {
 			t.Fatalf("Expected %d got %d", key, val)
 		}
 	}
@@ -149,7 +149,7 @@ func TestSkipList_randomPut(t *testing.T) {
 	for _, key := range elems {
 
 		val, ok, steps := sl.Get(key)
-		if !ok || !bytes.Equal(key, val) {
+		if !ok || !bytes.Equal(key, val.Value) {
 			t.Fatalf("Expected %d got %d", key, val)
 		}
 		// The skiplist should make fewer iterations to get to the same idx lineraly
