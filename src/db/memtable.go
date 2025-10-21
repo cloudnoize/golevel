@@ -11,38 +11,38 @@ import (
 )
 
 type MemTable struct {
-	skiplist      datastructures.SkipList
+	store         types.KVDB
 	byteSize      uint64
 	latestVersion uint64
 	isFlushed     atomic.Bool
 	isClosed      atomic.Bool
 }
 
-func NewMemTable(estimateCap uint64, p float64) *MemTable {
-	return &MemTable{skiplist: *datastructures.NewSkipList(estimateCap, p)}
+func NewMemTable(estimateCap uint64) *MemTable {
+	return &MemTable{store: datastructures.NewMapNSkip(estimateCap)}
 }
 
-func (m *MemTable) Put(kv *types.KV) error {
+func (m *MemTable) Put(kv *types.KV) (uint64, error) {
 	if m.isClosed.Load() {
-		return fmt.Errorf("trying to insert to inactive memtable")
+		return 0, fmt.Errorf("trying to insert to inactive memtable")
 	}
 	utils.Assert(kv.Version > m.latestVersion, "Input version is not higher than current version")
 	m.latestVersion = kv.Version
 	m.byteSize += uint64(len(kv.Key) + len(kv.Value))
-	m.skiplist.Put(kv)
-	return nil
+	m.store.Put(kv)
+	return m.byteSize, nil
 }
 
 func (m *MemTable) Get(key []byte) (types.VersionedValue, bool) {
 	if m.isFlushed.Load() {
 		return types.VersionedValue{}, false
 	}
-	ret, ok, _ := m.skiplist.Get(key)
+	ret, ok := m.store.Get(key)
 	return ret, ok
 }
 
 func (m *MemTable) Size() uint64 {
-	return m.skiplist.Size()
+	return m.store.Size()
 }
 
 func (m *MemTable) ByteSize() uint64 {

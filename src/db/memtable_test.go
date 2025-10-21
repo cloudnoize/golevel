@@ -8,7 +8,7 @@ import (
 )
 
 func TestMemTable_putAndGet(t *testing.T) {
-	mmt := NewMemTable(1024, 0.5)
+	mmt := NewMemTable(1024)
 	key := []byte("key")
 	version := 1
 	value := []byte("Val")

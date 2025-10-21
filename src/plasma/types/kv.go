@@ -17,6 +17,7 @@ type VersionedValue struct {
 
 type KVDB interface {
 	Put(kv *KV)
-	Get(key []byte) ([]byte, bool, uint64)
+	Get(key []byte) (VersionedValue, bool)
+	Size() uint64
 	//TODO multiput
 }

@@ -32,12 +32,12 @@ func TestSkipList_capacityPowerOf2(t *testing.T) {
 	}
 }
 
-func TestSkipList_putAndGet(t *testing.T) {
+func TestSkipList_PutKVAndGet(t *testing.T) {
 	sl := NewSkipList(1024, 0.5)
 	key := []byte("key")
 	version := 0
 	value := []byte("Val")
-	sl.Put(&types.KV{Key: key, Value: value, Version: uint64(version)})
+	sl.PutKV(&types.KV{Key: key, Value: value, Version: uint64(version)})
 	if sl.Size() != 1 {
 		t.Fatalf("Expected size 1 , actual %d", sl.Size())
 	}
@@ -55,7 +55,7 @@ func TestSkipList_putAndGet(t *testing.T) {
 
 }
 
-func TestSkipList_severalPutsAndGets(t *testing.T) {
+func TestSkipList_severalPutKVsAndGets(t *testing.T) {
 	sl := NewSkipList(1024, 0.5)
 
 	elems := [][]byte{
@@ -71,7 +71,7 @@ func TestSkipList_severalPutsAndGets(t *testing.T) {
 	})
 
 	for _, e := range elems {
-		sl.Put(&types.KV{Key: e, Value: e, Version: 0})
+		sl.PutKV(&types.KV{Key: e, Value: e, Version: 0})
 	}
 
 	if sl.Size() != 3 {
@@ -95,7 +95,7 @@ func TestSkipList_severalPutsAndGets(t *testing.T) {
 	}
 }
 
-func TestSkipList_randomPut(t *testing.T) {
+func TestSkipList_randomPutKV(t *testing.T) {
 	size := uint64(1024)
 	sl := NewSkipList(size, 0.5)
 
@@ -117,7 +117,7 @@ func TestSkipList_randomPut(t *testing.T) {
 		if i == 0 || !bytes.Equal(b, elems[i-1]) {
 			elems[i] = b
 		}
-		sl.Put(&types.KV{Key: b, Value: b, Version: i})
+		sl.PutKV(&types.KV{Key: b, Value: b, Version: i})
 	}
 
 	sortedElems := make([][]byte, len(elems))

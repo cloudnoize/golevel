@@ -21,6 +21,10 @@ func newNode(height uint16) *node {
 	}
 }
 
+// TODO I think that we can add a hashmap of from key_version -> value
+// it will be inserted before the skiplist and the skip list will contain only the key, and will go to the hashmap for the value.
+// this way gets will be o1. the skiplist insert can be done in a different go routine with a channel, as its need to be ready only when flushed.
+// it will reduec the contention as well as it's easier to implement a concurrent map.
 type SkipList struct {
 	head         *node
 	maxHeight    uint16
@@ -45,8 +49,11 @@ func (s SkipList) Size() uint64 {
 	return s.size + s.UpdatesSize
 }
 
-func (s *SkipList) Put(kv *types.KV) {
-	key, val, version := kv.Unpack()
+func (s *SkipList) PutKV(kv *types.KV) {
+	s.Put(kv.Unpack())
+}
+
+func (s *SkipList) Put(key, value []byte, version uint64) {
 	ptrsToNewNode := make([]*node, s.maxHeight)
 	ptrsFromNewNode := make([]*node, s.maxHeight)
 	curr := s.head
@@ -63,7 +70,7 @@ func (s *SkipList) Put(kv *types.KV) {
 			if res == 0 {
 				// 0 is equals, and equals means it's an update to the value
 				utils.Assert(next.verValues.Top().Version < version, "Input version is not higher than current version")
-				next.verValues.Push(types.VersionedValue{Value: val, Version: version})
+				next.verValues.Push(types.VersionedValue{Value: value, Version: version})
 				s.UpdatesSize++
 				return
 			}
@@ -82,7 +89,7 @@ func (s *SkipList) Put(kv *types.KV) {
 	nodeHeight := uint16(math.Min(probability.Geometric(s.p)+1, float64(s.maxHeight)))
 	node := newNode(nodeHeight)
 	node.key = key
-	node.verValues.Push(types.VersionedValue{Value: val, Version: version})
+	node.verValues.Push(types.VersionedValue{Value: value, Version: version})
 	// insert the new node, make each layer poit to it and from it
 	//TODO lock
 	for i := 0; i < int(nodeHeight); i++ {
